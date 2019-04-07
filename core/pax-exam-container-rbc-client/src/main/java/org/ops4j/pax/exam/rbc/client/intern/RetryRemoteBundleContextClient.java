@@ -127,6 +127,11 @@ public class RetryRemoteBundleContextClient implements RemoteBundleContextClient
     }
 
     @Override
+    public <R> R callStep(TestAddress address) throws Exception {
+        return proxy.callStep(address);
+    }
+
+    @Override
     public void uninstall(long bundleId) {
         proxy.uninstall(bundleId);
     }

@@ -47,4 +47,6 @@ public interface RemoteBundleContextClient {
     void waitForState(final long bundleId, final int state, final RelativeTimeout timeout);
 
     void call(TestAddress address);
+
+    <R> R callStep(TestAddress address) throws Exception;
 }

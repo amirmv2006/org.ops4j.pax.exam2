@@ -17,12 +17,17 @@
  */
 package org.ops4j.pax.exam.raw.extender.intern;
 
+import org.ops4j.pax.exam.ICucumberStepInvoker;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.ops4j.pax.swissbox.extender.BundleManifestScanner;
 import org.ops4j.pax.swissbox.extender.BundleWatcher;
 import org.ops4j.pax.swissbox.extender.ManifestEntry;
 import org.ops4j.pax.swissbox.extender.RegexKeyManifestFilter;
+import org.osgi.framework.ServiceRegistration;
+
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 /**
  * @author Toni Menzel
@@ -37,14 +42,18 @@ public class Activator implements BundleActivator {
      * Bundle watcher of web.xml.
      */
     private BundleWatcher<ManifestEntry> probeWatcher;
+    private ServiceRegistration<ICucumberStepInvoker> registration;
 
     public void start(BundleContext bundleContext) throws Exception {
         probeWatcher = new BundleWatcher<ManifestEntry>(bundleContext, new BundleManifestScanner(
             new RegexKeyManifestFilter(PAX_EXAM_HEADER_PREFIX)), new TestBundleObserver());
         probeWatcher.start();
+        Dictionary<String, ?> dict = new Hashtable<>();
+        registration = bundleContext.registerService(ICucumberStepInvoker.class, new CucumberStepInvokerImpl(), dict);
     }
 
     public void stop(BundleContext bundleContext) throws Exception {
         probeWatcher.stop();
+        registration.unregister();
     }
 }

@@ -32,5 +32,6 @@
     <module>pax-exam-sample10-derby</module>
     <module>pax-exam-sample11-wab</module>
     <module>exam-itest-sample-karaf</module>
+      <module>amir-karaf-test</module>
   </modules>
 </project>

@@ -31,6 +31,7 @@ import java.rmi.registry.Registry;
 import java.util.Stack;
 
 import org.ops4j.io.StreamUtils;
+import org.ops4j.pax.exam.ICucumberStepInvoker;
 import org.ops4j.pax.exam.ProbeInvoker;
 import org.ops4j.pax.exam.RelativeTimeout;
 import org.ops4j.pax.exam.TestAddress;
@@ -288,6 +289,12 @@ public class RemoteBundleContextClientImpl implements RemoteBundleContextClient 
             + ")";
         ProbeInvoker service = getService(ProbeInvoker.class, filterExpression, rmiLookupTimeout);
         service.call(address.arguments());
+    }
+
+    @Override
+    public <R> R callStep(TestAddress address) throws Exception {
+        ICucumberStepInvoker stepInvoker = getService(ICucumberStepInvoker.class, null, rmiLookupTimeout);
+        return stepInvoker.invokeStep(address.caption(), address.arguments());
     }
 
     public String getName() {
