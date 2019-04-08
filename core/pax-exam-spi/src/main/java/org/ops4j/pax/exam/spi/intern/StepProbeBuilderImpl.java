@@ -1,9 +1,6 @@
 package org.ops4j.pax.exam.spi.intern;
 
-import org.ops4j.pax.exam.IStepProbeBuilder;
-import org.ops4j.pax.exam.IStepProbeProvider;
-import org.ops4j.pax.exam.TestAddress;
-import org.ops4j.pax.exam.TestContainerException;
+import org.ops4j.pax.exam.*;
 import org.ops4j.pax.exam.spi.ContentCollector;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.store.Store;
@@ -16,6 +13,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
+import static org.ops4j.pax.exam.Constants.STEP_EXECUTABLE;
 import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
 import static org.ops4j.pax.tinybundles.core.TinyBundles.withClassicBuilder;
 
@@ -24,7 +22,7 @@ public class StepProbeBuilderImpl
 
     private final List<Class<?>> stepClasses;
     private final List<Class<?>> extraClasses;
-    private final Set<TestAddress> addresses;
+    private final Map<TestAddress, TestInstantiationInstruction> addresses;
     private final Properties extraProperties;
     private final Set<String> ignorePackages = new HashSet<String>();
     private final Store<InputStream> store;
@@ -33,7 +31,7 @@ public class StepProbeBuilderImpl
     public StepProbeBuilderImpl(File tempDir, Store<InputStream> store) {
         this.tempDir = tempDir;
         this.store = store;
-        addresses = new HashSet<>();
+        addresses = new HashMap<>();
         stepClasses = new ArrayList<>();
         extraProperties = new Properties();
         extraClasses = new ArrayList<>();
@@ -43,7 +41,7 @@ public class StepProbeBuilderImpl
     public TestAddress addStepDef(Class<?> stepDefClass, String methodName, Object... args) {
         TestAddress address = new DefaultTestAddress(stepDefClass.getName() + "." + methodName, args);
         stepClasses.add(stepDefClass);
-        addresses.add(address);
+        addresses.put(address, new TestInstantiationInstruction(stepDefClass.getName() + ";" + methodName));
         return address;
     }
 
@@ -66,7 +64,7 @@ public class StepProbeBuilderImpl
             throw new TestContainerException("No tests added to setup!");
         }
 
-//        constructProbeTag(extraProperties);
+        constructProbeTag(extraProperties);
         try {
             TinyBundle bundle = prepareProbeBundle(createExtraIgnores());
             return new StepProbeProviderImpl(getTests(), store, store.store(bundle
@@ -151,16 +149,16 @@ public class StepProbeBuilderImpl
         }
     }
 
-//    private void constructProbeTag(Properties p) {
-//        StringBuilder sbKeyChain = new StringBuilder();
-//
-//        for (TestAddress address : probeCalls.keySet()) {
-//            sbKeyChain.append(address.identifier());
-//            sbKeyChain.append(",");
-//            p.put(address.identifier(), probeCalls.get(address).toString());
-//        }
-//        p.put(PROBE_EXECUTABLE, sbKeyChain.toString());
-//    }
+    private void constructProbeTag(Properties p) {
+        StringBuilder sbKeyChain = new StringBuilder();
+
+        for (TestAddress address : addresses.keySet()) {
+            sbKeyChain.append(address.identifier());
+            sbKeyChain.append(",");
+            p.put(address.identifier(), addresses.get(address).toString());
+        }
+        p.put(STEP_EXECUTABLE, sbKeyChain.toString());
+    }
 
     private Properties createExtraIgnores() {
         Properties properties = new Properties();
@@ -176,7 +174,7 @@ public class StepProbeBuilderImpl
     }
 
     public Set<TestAddress> getTests() {
-        return addresses;
+        return addresses.keySet();
     }
 
     @Override

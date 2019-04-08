@@ -98,7 +98,10 @@ public class RemoteBundleContextClientImpl implements RemoteBundleContextClient 
                  * Delegates the call to remote bundle context.
                  */
                 @Override
-                public Object invoke(final Object proxy, final Method method, final Object[] params) {
+                public Object invoke(final Object proxy, final Method method, final Object[] params) throws InvocationTargetException, IllegalAccessException {
+                    if (method.getDeclaringClass().equals(Object.class)) {
+                        return method.invoke(RemoteBundleContextClientImpl.this, params);
+                    }
                     try {
                         return getRemoteBundleContext().remoteCall(method.getDeclaringClass(),
                             method.getName(), method.getParameterTypes(), filter, timeout, params);

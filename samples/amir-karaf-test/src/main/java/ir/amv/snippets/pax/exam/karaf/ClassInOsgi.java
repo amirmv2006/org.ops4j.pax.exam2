@@ -4,7 +4,8 @@ import java.util.logging.Logger;
 
 public class ClassInOsgi {
 
-    public void print() {
+    public String print() {
         Logger.getLogger(getClass().getName()).warning("Hi There");
+        return "Amir";
     }
 }

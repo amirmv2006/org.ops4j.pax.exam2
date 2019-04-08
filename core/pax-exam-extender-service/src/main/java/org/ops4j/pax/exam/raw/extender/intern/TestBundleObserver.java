@@ -45,12 +45,14 @@ public class TestBundleObserver implements BundleObserver<ManifestEntry> {
      * Holder for regression runner registrations per bundle.
      */
     private final Map<Bundle, Registration> registrations;
+    private final Map<Bundle, StepRegistration> stepRegistrations;
 
     /**
      * Constructor.
      */
     TestBundleObserver() {
         registrations = new HashMap<Bundle, Registration>();
+        stepRegistrations = new HashMap<>();
     }
 
     /**
@@ -58,10 +60,15 @@ public class TestBundleObserver implements BundleObserver<ManifestEntry> {
      */
     public void addingEntries(final Bundle bundle, final List<ManifestEntry> manifestEntries) {
         String testExec = null;
+        String stepExec = null;
         for (ManifestEntry manifestEntry : manifestEntries) {
 
             if (Constants.PROBE_EXECUTABLE.equals(manifestEntry.getKey())) {
                 testExec = manifestEntry.getValue();
+                break;
+            }
+            if (Constants.STEP_EXECUTABLE.equals(manifestEntry.getKey())) {
+                stepExec = manifestEntry.getValue();
                 break;
             }
         }
@@ -72,7 +79,14 @@ public class TestBundleObserver implements BundleObserver<ManifestEntry> {
                 final ServiceRegistration<?> serviceRegistration = p.register(bundleContext);
                 registrations.put(bundle, new Registration(p, serviceRegistration));
             }
-
+        }
+        if (stepExec != null) {
+            StepParser parser = new StepParser(bundle.getBundleContext(), stepExec, manifestEntries);
+            for (Step p : parser.getSteps()) {
+                final BundleContext bundleContext = BundleUtils.getBundleContext(bundle);
+                final ServiceRegistration<?> serviceRegistration = p.register(bundleContext);
+                stepRegistrations.put(bundle, new StepRegistration(p, serviceRegistration));
+            }
         }
     }
 
@@ -88,6 +102,14 @@ public class TestBundleObserver implements BundleObserver<ManifestEntry> {
             // registration.serviceRegistration.unregister();
             LOG.debug("Unregistered testcase [" + registration.probe + "." + "]");
         }
+        final StepRegistration stepRegistration = stepRegistrations.remove(bundle);
+        if (stepRegistration != null) {
+            // Do not unregister as below, because the services are automatically unregistered as
+            // soon as the bundle
+            // for which the services are registered gets stopped
+            // registration.serviceRegistration.unregister();
+            LOG.debug("Unregistered step [" + stepRegistration.probe + "." + "]");
+        }
     }
 
     /**
@@ -98,6 +120,17 @@ public class TestBundleObserver implements BundleObserver<ManifestEntry> {
         final Probe probe;
 
         public Registration(Probe probe, final ServiceRegistration<?> serviceRegistration) {
+            this.probe = probe;
+        }
+    }
+    /**
+     * Registration holder.
+     */
+    private static class StepRegistration {
+
+        final Step probe;
+
+        public StepRegistration(Step probe, final ServiceRegistration<?> serviceRegistration) {
             this.probe = probe;
         }
     }

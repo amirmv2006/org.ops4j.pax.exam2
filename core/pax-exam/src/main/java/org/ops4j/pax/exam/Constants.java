@@ -60,6 +60,8 @@ public class Constants {
      * Manifest header specifying the string of executable services.
      */
     public static final String PROBE_EXECUTABLE = "PaxExam-Executable";
+    public static final String STEP_EXECUTABLE = "PaxExam-StepExecutable";
+    public static final String STEP_SIGNATURE_KEY = "Step-Signature";
 
     /** Name of configuration properties file. */
     public static final String EXAM_PROPERTIES_FILE = "exam.properties";
