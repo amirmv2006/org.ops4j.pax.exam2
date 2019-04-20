@@ -295,9 +295,9 @@ public class RemoteBundleContextClientImpl implements RemoteBundleContextClient 
     }
 
     @Override
-    public <R> R callStep(TestAddress address) throws Exception {
+    public <R> R callStep(TestAddress address, Object... args) throws Exception {
         ICucumberStepInvoker stepInvoker = getService(ICucumberStepInvoker.class, null, rmiLookupTimeout);
-        return stepInvoker.invokeStep(address.caption(), address.arguments());
+        return stepInvoker.invokeStep(address.caption(), args);
     }
 
     public String getName() {

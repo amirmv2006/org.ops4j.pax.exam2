@@ -6,15 +6,18 @@ import org.ops4j.pax.swissbox.tracker.ServiceLookup;
 import org.osgi.framework.BundleContext;
 
 import java.lang.reflect.Method;
+import java.util.Hashtable;
 
 public class CucumberStepInvokerImpl
         implements ICucumberStepInvoker {
     private BundleContext ctx;
     private Injector injector;
+    private final Hashtable<Class<?>, Object> cachedInstances;
 
     public CucumberStepInvokerImpl(String expr, BundleContext ctx) {
         this.ctx = ctx;
         injector = ServiceLookup.getService(ctx, Injector.class);
+        cachedInstances = new Hashtable<>();
     }
 
     @Override
@@ -27,8 +30,15 @@ public class CucumberStepInvokerImpl
         for (Method declaredMethod : declaredMethods) {
             if (declaredMethod.getName().equals(classAndMethodName.substring(lastIndexOf + 1))) {
                 // keep instances of steps
-                Object newInstance = stepClass.newInstance();
-                injector.injectFields(newInstance);
+                Object newInstance = cachedInstances.computeIfAbsent(stepClass, clazz -> {
+                    try {
+                        Object o = clazz.newInstance();
+                        injector.injectFields(o);
+                        return o;
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        throw new RuntimeException("can not instantiate " + clazz, e);
+                    }
+                });
                 return (R) declaredMethod.invoke(newInstance, args);
             }
         }

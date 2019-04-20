@@ -48,5 +48,5 @@ public interface RemoteBundleContextClient {
 
     void call(TestAddress address);
 
-    <R> R callStep(TestAddress address) throws Exception;
+    <R> R callStep(TestAddress address, Object... args) throws Exception;
 }
