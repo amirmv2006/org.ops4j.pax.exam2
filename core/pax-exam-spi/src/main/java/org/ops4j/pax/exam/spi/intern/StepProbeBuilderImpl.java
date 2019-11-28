@@ -21,7 +21,7 @@ public class StepProbeBuilderImpl
         implements IStepProbeBuilder {
 
     private final List<Class<?>> stepClasses;
-    private final List<Class<?>> extraClasses;
+    private final Set<Class<?>> extraClasses;
     private final Map<TestAddress, TestInstantiationInstruction> addresses;
     private final Properties extraProperties;
     private final Set<String> ignorePackages = new HashSet<String>();
@@ -34,7 +34,7 @@ public class StepProbeBuilderImpl
         addresses = new HashMap<>();
         stepClasses = new ArrayList<>();
         extraProperties = new Properties();
-        extraClasses = new ArrayList<>();
+        extraClasses = new HashSet<>();
     }
 
     @Override
@@ -139,8 +139,7 @@ public class StepProbeBuilderImpl
 
     private ContentCollector selectCollector() throws IOException {
         File root = findClassesFolder(stepClasses.get(0));
-        List<Class<?>> allClasses = new ArrayList<>(stepClasses);
-        allClasses.addAll(extraClasses);
+        List<Class<?>> allClasses = getAllRemoteClasses();
         if (root != null) {
             return new CompositeCollector(new CollectFromBase(root), new CollectFromItems(allClasses));
         }
@@ -185,5 +184,12 @@ public class StepProbeBuilderImpl
     @Override
     public void setTempDir(File tempDir) {
         this.tempDir = tempDir;
+    }
+
+    @Override
+    public List<Class<?>> getAllRemoteClasses() {
+        List<Class<?>> allClasses = new ArrayList<>(stepClasses);
+        allClasses.addAll(extraClasses);
+        return allClasses;
     }
 }

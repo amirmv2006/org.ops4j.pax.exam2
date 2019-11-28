@@ -1,6 +1,7 @@
 package org.ops4j.pax.exam;
 
 import java.io.File;
+import java.util.List;
 
 public interface IStepProbeBuilder {
 
@@ -15,4 +16,6 @@ public interface IStepProbeBuilder {
     File getTempDir();
 
     void setTempDir(File tempDir);
+
+    List<Class<?>> getAllRemoteClasses();
 }
