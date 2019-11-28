@@ -10,7 +10,7 @@
 
     <groupId>org.ops4j.pax</groupId>
     <artifactId>exam-reactor</artifactId>
-    <version>4.13.2-SNAPSHOT</version>
+    <version>4.13.2.AMIR-CUCUMBER-INTEGRATION-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>OPS4J Pax Exam (Reactor POM)</name>
@@ -83,6 +83,18 @@
       <tag>HEAD</tag>
   </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>releases</name>
+            <url>http://localhost:8081/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>snapshots</name>
+            <url>http://localhost:8081/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <plugins>
